@@ -23,15 +23,21 @@ CORS(app, resources={r'*': {'origins': '*'}}) # 모든 곳에서 호출하는 �
 
 @app.route("/api/setRoboticsInfo", methods=['POST'])
 def setInfo():
-    params = request.get_data() # 전달된 json값을 저장
-    params = str(params, "utf-8")
-    now = datetime.datetime.now()
+    try:
+        params = request.get_data() # 전달된 json값을 저장
+        params = str(params, "utf-8")
+        if params is '':
+            return "Params is null"
+        now = datetime.datetime.now()
     
-    time = str(now.year)+'-'+str(now.month)+'-'+str(now.day)+' '+str(now.hour)+':'+str(now.minute)+':'+str(now.second) #1000-00-00 00:00:00
-    with engine.connect() as connection:
-       connection.execute("INSERT INTO info (data, date) VALUES (%s, %s)", (params, time))
+        time = str(now.year)+'-'+str(now.month)+'-'+str(now.day)+' '+str(now.hour)+':'+str(now.minute)+':'+str(now.second) #1000-00-00 00:00:00
+        with engine.connect() as connection:
+            connection.execute("INSERT INTO info (data, date) VALUES (%s, %s)", (params, time))
 
-    return "Success"
+        return "Success"
+    
+    except Exception as e:
+        return "An error occurred : {}".format(str(e))
     
     
 
@@ -39,17 +45,26 @@ def setInfo():
 
 @app.route("/api/getRoboticsInfo", methods=['POST','GET'])
 def getInfo(): 
-    params = request.get_data() # 전달된 json값을 저장
-    params = str(params, "utf-8")
-    
-    print(params)
-    row = app.database.execute("""
-            SELECT data
-            FROM info 
-            WHERE date = %s
-        """,params).fetchone()
+    try:
+        params = request.get_data() # 전달된 json값을 저장
+        params = str(params, "utf-8")
+        if params is '':
+            return "Params is null"
         
-    return str(row)
+        print(params)
+        
+        
+        
+        row = app.database.execute("""
+                SELECT data
+                FROM info 
+                WHERE date = %s
+            """, params).fetchone()
+
+        return str(row)
+    
+    except Exception as e:
+        return "An error occurred: {}".format(str(e))
 
 # 콤마 제거 
     #if row:
