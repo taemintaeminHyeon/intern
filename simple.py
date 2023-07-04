@@ -26,7 +26,7 @@ def setInfo():
     try:
         params = request.get_data() # 전달된 json값을 저장
         params = str(params, "utf-8")
-        if params is '':
+        if params == '':
             return "Params is null"
         now = datetime.datetime.now()
     
@@ -48,7 +48,7 @@ def getInfo():
     try:
         params = request.get_data() # 전달된 json값을 저장
         params = str(params, "utf-8")
-        if params is '':
+        if params == '':
             return "Params is null"
         
         print(params)
