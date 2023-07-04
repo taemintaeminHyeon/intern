@@ -72,4 +72,5 @@ def sendStopInfo():
     
     
 app.run(host="0.0.0.0", port=2222) #서버 실행
-#app.run() #로컬 테스트 확인용 
+
+
