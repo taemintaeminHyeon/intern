@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Robotics Info</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/3.1.3/socket.io.js"></script>
+  <script>
+    // Socket.IO 네임스페이스에 연결
+    const socket = io('/robotics_info');
+
+    // 서버에서 'robotics_info' 이벤트 수신
+    socket.on('robotics_info', (data) => {
+      // 데이터 처리
+      document.getElementById('data-container').innerHTML = data.data;
+    });
+
+    // 정보 보내기 함수
+    function sendInfo() {
+      const info = document.getElementById('info-input').value;  // 입력된 정보 가져오기
+      fetch('/api/getRoboticsInfo', {
+        method: 'POST',
+        body: info
+      })
+      .then(() => {
+        // 반환된 결과를 처리하지 않음
+      })
+      .catch(error => console.error(error));
+    }
+
+   
+  </script>
+</head>
+<body>
+  <h1>Robotics Info</h1>
+  <input type="text" id="info-input" placeholder="Enter info">
+  <button onclick="sendInfo()">Send Info</button>
+  <div id="data-container"></div>
+</body>
+</html>

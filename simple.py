@@ -5,7 +5,7 @@ Created on Tue Jul  4 08:57:51 2023
 @author: jbr
 """
 
-from flask import Flask, request
+from flask import Flask, request, render_template
 import datetime
 from sqlalchemy import create_engine
 # run server
@@ -18,6 +18,8 @@ app.config.from_pyfile("config.py")
 database = create_engine(app.config['DB_URL'], encoding='utf-8', max_overflow=0)
 app.database = database
 CORS(app, resources={r'*': {'origins': '*'}}) # 모든 곳에서 호출하는 것을 허용
+
+
 
 
 @app.route("/api/setRoboticsInfo", methods=['POST'])
