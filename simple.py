@@ -5,7 +5,7 @@ Created on Tue Jul  4 08:57:51 2023
 @author: jbr
 """
 
-from flask import Flask, request, render_template
+from flask import Flask, request
 import datetime
 from sqlalchemy import create_engine
 # run server
