@@ -5,8 +5,7 @@ Created on Tue Jul  4 08:57:51 2023
 @author: jbr
 """
 
-from flask import Flask, render_template, request
-from sqlalchemy import create_engine, text
+from flask import Flask, request
 import datetime
 from sqlalchemy import create_engine
 # run server
@@ -24,7 +23,7 @@ CORS(app, resources={r'*': {'origins': '*'}}) # 모든 곳에서 호출하는 �
 @app.route("/api/setRoboticsInfo", methods=['POST'])
 def setInfo():
     try:
-        params = request.get_data() # 전달된 json값을 저장
+        params = request.get_data() # 전달된 값을 저장
         params = str(params, "utf-8")
         if params == '':
             return "Params is null"
@@ -46,7 +45,7 @@ def setInfo():
 @app.route("/api/getRoboticsInfo", methods=['POST','GET'])
 def getInfo(): 
     try:
-        params = request.get_data() # 전달된 json값을 저장
+        params = request.get_data() # 전달된 값을 저장
         params = str(params, "utf-8")
         if params == '':
             return "Params is null"
@@ -95,5 +94,8 @@ def sendStopInfo():
     
     
 app.run(host="0.0.0.0", port=2222) #서버 실행
+
+
+
 
 
