@@ -43,8 +43,8 @@ def getInfo():
         #        WHERE date = %s
         #    """, params).fetchone()
 
-        # 연결된 클라이언트에 데이터 전송
-        socketio.emit('robotics_info', {'data': params}, namespace='/robotics_info')
+        # 연결된 클라이언트에 데이터 전송 (필요 없음)
+        #socketio.emit('robotics_info', {'data': params}, namespace='/robotics_info')
 
         return "Success"
 
