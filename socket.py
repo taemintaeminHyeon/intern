@@ -17,7 +17,7 @@ app.database = database
 socketio = SocketIO(app, manage_session=False)  # SocketIO 초기화
 
 
-rooms= {}
+rooms= {}  #다수의 방 생성
 
 @app.route("/")
 def index():
@@ -62,7 +62,7 @@ def setInfo():
         userid="user1"
         if params == '':
             return "Params is null"
-        now = datetime.datetime.now()
+        #now = datetime.datetime.now()
 
         #time = str(now.year)+'-'+str(now.month)+'-'+str(now.day)+' '+str(now.hour)+':'+str(now.minute)+':'+str(now.second) #1000-00-00 00:00:00
         #with engine.connect() as connection:
