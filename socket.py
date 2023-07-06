@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 """
 Created on Tue Jul  4 08:57:51 2023
-@author: jbr
+@author: taeminHyeon
 """
 
 from flask import Flask, request, render_template

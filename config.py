@@ -2,7 +2,7 @@
 """
 Created on Tue Jul  4 10:30:49 2023
 
-@author: jbr
+@author: taeminHyeon
 """
 
 db = {
