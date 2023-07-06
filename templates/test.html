@@ -13,6 +13,19 @@
       document.getElementById('data-container').innerHTML = data.data;
     });
 
+// 서버에서 'room_created' 이벤트 수신
+socket.on('room_created', (data) => {
+  const roomName = data.room_name;
+  socket.emit('join_room', { room_name: roomName });
+  console.log('Room created:', roomName);
+});
+
+// 클라이언트에서 'join_room' 이벤트 수신
+socket.on('join_room', (roomName) => {
+  console.log('Joined room:', roomName);
+});
+
+
     // 정보 보내기 함수
     function sendInfo() {
       const info = document.getElementById('info-input').value;  // 입력된 정보 가져오기
@@ -26,13 +39,25 @@
       .catch(error => console.error(error));
     }
 
-   
+    // 방 생성 함수
+    function createRoom() {
+      fetch('/api/makeRoom', {
+        method: 'POST'
+      })
+      .then(response => response.text())
+      .then(result => {
+        console.log(result);
+      })
+      .catch(error => console.error(error));
+    }
+
   </script>
 </head>
 <body>
   <h1>Robotics Info</h1>
   <input type="text" id="info-input" placeholder="Enter info">
   <button onclick="sendInfo()">Send Info</button>
+  <button onclick="createRoom()">Create Room</button>
   <div id="data-container"></div>
 </body>
 </html>
