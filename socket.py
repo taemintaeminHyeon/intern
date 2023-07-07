@@ -18,7 +18,6 @@ socketio = SocketIO(app, manage_session=False)  # SocketIO 초기화
 
 
 
-rooms = set()  # 중복 방 생성 방지를 위한 집합
 
 @app.route("/")
 def index():
@@ -195,16 +194,11 @@ def on_join_room(data):
     client_sid = request.sid
     print(f"Client request with SID: {client_sid}")
     room_name = data['room_name'] #data dic 에서 key 값이 room_name인 value를 가져옴
-    print(rooms)
-    if room_name in rooms:
-        emit('join_room_failed', {'reason': 'Room already exists'}, namespace='/robotics_info')
-        print(f"Client fail room with SID: {client_sid}")
-    else:
-        join_room(room_name)  # 클라이언트를 방에 참여시킴
-        rooms.add(room_name)
-        print(f"Client joined room: {room_name}")
-        print(f"Client success room with SID: {client_sid}")
-        emit('room_joined', {'room_name': room_name}, namespace='/robotics_info')  # 클라이언트에게 'room_joined' 이벤트 전송
+    
+    join_room(room_name)  # 클라이언트를 방에 참여시킴
+    print(f"Client joined room: {room_name}")
+    print(f"Client success room with SID: {client_sid}")
+    emit('room_joined', {'room_name': room_name}, namespace='/robotics_info')  # 클라이언트에게 'room_joined' 이벤트 전송
         
     
 @socketio.on('connect', namespace='/robotics_info') # 클라이언트가 소켓 연결 시 호출
