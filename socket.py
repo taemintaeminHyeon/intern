@@ -3,7 +3,7 @@
 Created on Tue Jul  4 08:57:51 2023
 @author: taeminHyeon
 """
-
+import json
 from flask import Flask, request, render_template
 import datetime
 from sqlalchemy import create_engine
@@ -17,7 +17,8 @@ app.database = database
 socketio = SocketIO(app, manage_session=False)  # SocketIO 초기화
 
 
-rooms= {}  #다수의 방 생성
+
+rooms = set()  # 중복 방 생성 방지를 위한 집합
 
 @app.route("/")
 def index():
@@ -58,10 +59,17 @@ def setInfo():
     try:
         params = request.get_data()  # 전달된 값을 저장
         params = str(params, "utf-8")
-        robotid = "robot1"
-        userid="user1"
+        
         if params == '':
             return "Params is null"
+        list = params.split(',')
+        
+        robotId = list[0] # 임시
+        content = list[1] # 임시
+        
+        
+        print('robotid ----------------> '+str(list[0]))
+        print('content ----------------> '+str(list[1]))
         #now = datetime.datetime.now()
 
         #time = str(now.year)+'-'+str(now.month)+'-'+str(now.day)+' '+str(now.hour)+':'+str(now.minute)+':'+str(now.second) #1000-00-00 00:00:00
@@ -69,9 +77,28 @@ def setInfo():
         #    connection.execute("INSERT INTO info (data, date) VALUES (%s, %s)", (params, time))
 
         # Socket.IO를 사용하여 클라이언트에게 실시간으로 데이터 전달
-        room_name = f"{robotid}{userid}"  # 방 이름 생성
+        
+        
+        result = app.database.execute("""             
+                                  SELECT USERID
+                                  FROM connection 
+                                  WHERE robotid = %s 
+                                  """, robotId).fetchone()
+        
+        if result:
+            userId = result[0]
+        else:
+            return 'Fail'
+                                    
+        print(userId) #userid만 뽑아와야함
+        
+        
+        room_name = f"{robotId}{userId}"  # 방 이름 생성
         print(room_name)
-        socketio.emit('robotics_info', {'data': params}, room=room_name, namespace='/robotics_info')
+        
+        #robotics_info 이벤트 발생시킴 (html에 있음)
+        socketio.emit('robotics_info', {'data': content}, room=room_name, namespace='/robotics_info')
+        
 
         return "Success"
 
@@ -82,20 +109,49 @@ def setInfo():
 
 @app.route("/api/makeRoom",methods=["POST"])
 def makeRoom():
-    robotid = "robot1"
-    userid="user1"
     
+    params = request.get_data()
+    if params == '':
+        return "Params is null"
+    
+    json_str = params.decode("utf-8") # 바이트 타입을 json
+    params = json.loads(json_str) # json을 딕셔너리
+    print(type(params)) 
+    print(params)
+    
+    userid = params['userid'] # 유저 아이디 저장
+    robotid = params['robotid'] # 로봇 아이디 저장 
+    sid = params['sid']
+    
+    #userid = str(userid, "utf-8")# 전달된 로봇 id값을 저장
+    #robotid = request.get_data("robotid")
+    #robotid = str(robotid, "utf-8")
+    
+
+    
+    print('user id ======>' +userid)
+    print('robot id =====> '+robotid)
+    
+    
+    # 로봇과 유저 아이디 db 존재 확인
     connection = app.database.execute("""             
                               SELECT ROBOTID, USERID
                               FROM connection 
-                              WHERE robotid = %s and userid = %s
+                              WHERE robotid = %s AND userid = %s
                               """, robotid, userid).fetchone()
+    
+    print(connection)
+                        
+    if connection == '' : # 존재하지 않으면 fail
+        return "Fail"                    
+   
     
     if connection:
         room_name = f"{robotid}{userid}"  # 방 이름 생성
         print(room_name)
-        socketio.emit('join_room', {'room_name': room_name}, namespace='/robotics_info')
-        socketio.emit('room_created', {'room_name': room_name}, namespace='/robotics_info')
+        
+        socketio.emit('room_created', {'room_name': room_name},room=sid,namespace='/robotics_info')
+        
         return "Success"
     else:
         return "Fail"
@@ -104,11 +160,11 @@ def makeRoom():
     
 
 
-@app.route("/api/sendRobotID", methods=['POST'])
+@app.route("/api/sendUserID", methods=['POST'])
 def getID():
-    # db에 유저 id 있으면 좋을 듯     
+         
     try:
-        params = request.get_data()  # 전달된 로봇 id값을 저장
+        params = request.get_data("")  # 전달된 로봇 id값을 저장
         params = str(params, "utf-8")
         if params == '':
             return "Params is null"
@@ -132,28 +188,45 @@ def getID():
     except Exception as e:
         return "An error occurred: {}".format(str(e))
         
-@socketio.on('join_room', namespace='/robotics_info')
+@socketio.on('join_room', namespace='/robotics_info') # 이벤트 join_room 발생시 호출 
 def on_join_room(data):
-    room_name = data['room_name']
-    join_room(room_name)  # 클라이언트를 방에 참여시킴
-    print(f"Client joined room: {room_name}")
-    emit('room_joined', {'room_name': room_name}, namespace='/robotics_info')  # 클라이언트에게 'room_joined' 이벤트 전송
-
+    client_sid = request.sid
+    print(f"Client request with SID: {client_sid}")
+    room_name = data['room_name'] #data dic 에서 key 값이 room_name인 value를 가져옴
+    print(rooms)
+    if room_name in rooms:
+        emit('join_room_failed', {'reason': 'Room already exists'}, namespace='/robotics_info')
+        print(f"Client fail room with SID: {client_sid}")
+    else:
+        join_room(room_name)  # 클라이언트를 방에 참여시킴
+        rooms.add(room_name)
+        print(f"Client joined room: {room_name}")
+        print(f"Client success room with SID: {client_sid}")
+        emit('room_joined', {'room_name': room_name}, namespace='/robotics_info')  # 클라이언트에게 'room_joined' 이벤트 전송
+        
     
-@socketio.on('connect', namespace='/robotics_info')
+@socketio.on('connect', namespace='/robotics_info') # 클라이언트가 소켓 연결 시 호출
 def on_connect():
     client_sid = request.sid
     print(f"Client connected with SID: {client_sid}")
+    join_room(client_sid)
     user_agent = request.headers.get('User-Agent')
     print(f"Client User-Agent: {user_agent}")
+    # 클라이언트의 세션 ID를 사용하여 방 이름 생성
+   
+
+    # 방 이름으로 클라이언트를 참여시킴
+   
 
 
-@socketio.on('disconnect', namespace='/robotics_info')
+@socketio.on('disconnect', namespace='/robotics_info') # 클라이언트가 소켓 해제 시 호출
 def on_disconnect():
     print('Client disconnected')
     client_sid = request.sid
+    
     print(f"Client disconnected with SID: {client_sid}")
 
+    
 if __name__ == '__main__':
     socketio.run(app, host="0.0.0.0", port=2222,allow_unsafe_werkzeug=True)
     

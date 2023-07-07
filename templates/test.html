@@ -6,6 +6,8 @@
   <script>
     // Socket.IO 네임스페이스에 연결
     const socket = io('/robotics_info');
+    let roomName = ''; // 클라이언트가 속한 방 이름
+
 
     // 서버에서 'robotics_info' 이벤트 수신
     socket.on('robotics_info', (data) => {
@@ -13,18 +15,17 @@
       document.getElementById('data-container').innerHTML = data.data;
     });
 
-// 서버에서 'room_created' 이벤트 수신
-socket.on('room_created', (data) => {
-  const roomName = data.room_name;
-  socket.emit('join_room', { room_name: roomName });
-  console.log('Room created:', roomName);
-});
+    // 서버에서 'room_created' 이벤트 수신
+    socket.on('room_created', (data) => {
+      const roomName = data.room_name;
+      socket.emit('join_room', { room_name: roomName });
+      console.log('Room created:', roomName);
+    });
 
-// 클라이언트에서 'join_room' 이벤트 수신
-socket.on('join_room', (roomName) => {
-  console.log('Joined room:', roomName);
-});
-
+    // 클라이언트에서 'join_room' 이벤트 수신
+    socket.on('join_room', (roomName) => {
+      console.log('Joined room:', roomName);
+    });
 
     // 정보 보내기 함수
     function sendInfo() {
@@ -41,11 +42,25 @@ socket.on('join_room', (roomName) => {
 
     // 방 생성 함수
     function createRoom() {
+	const sid = socket.id;
       fetch('/api/makeRoom', {
-        method: 'POST'
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          userid: document.getElementById('userid').value,
+          robotid: document.getElementById('robotid').value,
+	  sid: sid
+	 
+        })
       })
       .then(response => response.text())
       .then(result => {
+        if (result === 'Success') {
+          // 방 생성 성공 시 roomName 변수 업데이트
+          roomName = document.getElementById('robotid').value + document.getElementById('userid').value;
+        }
         console.log(result);
       })
       .catch(error => console.error(error));
@@ -55,9 +70,14 @@ socket.on('join_room', (roomName) => {
 </head>
 <body>
   <h1>Robotics Info</h1>
+  <label for="userid">User ID:</label>
+  <input type="text" id="userid" placeholder="Enter User ID"><br><br>
+  <label for="robotid">Robot ID:</label>
+  <input type="text" id="robotid" placeholder="Enter Robot ID"><br><br>
+  <input type="button" onclick="createRoom()" value="Create Room">
+  <br><br>
   <input type="text" id="info-input" placeholder="Enter info">
   <button onclick="sendInfo()">Send Info</button>
-  <button onclick="createRoom()">Create Room</button>
   <div id="data-container"></div>
 </body>
 </html>
