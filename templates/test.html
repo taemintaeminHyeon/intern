@@ -2,47 +2,79 @@
 <html>
 <head>
   <title>Robotics Info</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 20px;
+    }
+    h1 {
+      color: #333;
+    }
+    label {
+      font-weight: bold;
+    }
+    input[type="text"] {
+      padding: 10px;
+      font-size: 14px;
+      border-radius: 4px;
+      border: 1px solid #ccc;
+      margin-bottom: 10px;
+    }
+    input[type="button"],
+    button {
+      padding: 10px 20px;
+      font-size: 16px;
+      border-radius: 4px;
+      background-color: #007bff;
+      color: #fff;
+      border: none;
+      cursor: pointer;
+    }
+    input[type="button"]:hover,
+    button:hover {
+      background-color: #0056b3;
+    }
+    #data-container {
+      margin-top: 20px;
+      border: 1px solid #ccc;
+      padding: 10px;
+      min-height: 100px;
+    }
+  </style>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/3.1.3/socket.io.js"></script>
   <script>
-    // Socket.IO 네임스페이스에 연결
     const socket = io('/robotics_info');
-    let roomName = ''; // 클라이언트가 속한 방 이름
+    let roomName = '';
 
-
-    // 서버에서 'robotics_info' 이벤트 수신
     socket.on('robotics_info', (data) => {
-      // 데이터 처리
       document.getElementById('data-container').innerHTML = data.data;
     });
 
-    // 서버에서 'room_created' 이벤트 수신
     socket.on('room_created', (data) => {
       const roomName = data.room_name;
       socket.emit('join_room', { room_name: roomName });
       console.log('Room created:', roomName);
     });
 
-    // 클라이언트에서 'join_room' 이벤트 수신
     socket.on('join_room', (roomName) => {
       console.log('Joined room:', roomName);
     });
 
-    // 정보 보내기 함수
     function sendInfo() {
-      const info = document.getElementById('info-input').value;  // 입력된 정보 가져오기
+      const info = document.getElementById('info-input').value;
       fetch('/api/getRoboticsInfo', {
         method: 'POST',
         body: info
       })
       .then(() => {
-        // 반환된 결과를 처리하지 않음
+        // 처리하지 않음
       })
       .catch(error => console.error(error));
     }
 
-    // 방 생성 함수
     function createRoom() {
-	const sid = socket.id;
+      const sid = socket.id;
       fetch('/api/makeRoom', {
         method: 'POST',
         headers: {
@@ -51,21 +83,18 @@
         body: JSON.stringify({
           userid: document.getElementById('userid').value,
           robotid: document.getElementById('robotid').value,
-	  sid: sid
-	 
+          sid: sid
         })
       })
       .then(response => response.text())
       .then(result => {
         if (result === 'Success') {
-          // 방 생성 성공 시 roomName 변수 업데이트
           roomName = document.getElementById('robotid').value + document.getElementById('userid').value;
         }
         console.log(result);
       })
       .catch(error => console.error(error));
     }
-
   </script>
 </head>
 <body>
