@@ -62,7 +62,9 @@ def setInfo():
         
         if params == '':
             return "Params is null"
-        list = params.split(',')
+        
+        #데이터를 어떤 형식으로 줄 지 정하지 않아 현재 ,를 기준으로 분리하여 리스트에 넣음 (임시)
+        list = params.split(',')  
         
         robotId = list[0] # 임시
         content = list[1] # 임시
