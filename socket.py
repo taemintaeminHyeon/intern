@@ -30,14 +30,22 @@ def getInfo():
         params = str(params, "utf-8")
         if params == '':
             return "Params is null"
-
         print(params)
+        list = params.split(',')  
         
-        now = datetime.datetime.now()
-
-        time = str(now.year)+'-'+str(now.month)+'-'+str(now.day)+' '+str(now.hour)+':'+str(now.minute)+':'+str(now.second) #1000-00-00 00:00:00
-        with engine.connect() as connection:
-            connection.execute("INSERT INTO info (data, date) VALUES (%s, %s)", (params, time))
+        robotId = list[0] # 임시
+        content = list[1] # 임시
+        print("robot id ------>",list[0])
+        print("content ------->",list[1])
+        
+        
+# =============================================================================
+#         now = datetime.datetime.now()
+# 
+#         time = str(now.year)+'-'+str(now.month)+'-'+str(now.day)+' '+str(now.hour)+':'+str(now.minute)+':'+str(now.second) #1000-00-00 00:00:00
+#         with engine.connect() as connection:
+#             connection.execute("INSERT INTO info (data, date) VALUES (%s, %s)", (params, time))
+# =============================================================================
 
         #row = app.database.execute("""
         #        SELECT data
@@ -47,7 +55,10 @@ def getInfo():
 
         # 연결된 클라이언트에 데이터 전송 (필요 없음)
         #socketio.emit('robotics_info', {'data': params}, namespace='/robotics_info')
-
+        
+        socketio.emit('client_info', {'data': content}, room=str(robotId), namespace='/robotics_info')
+        
+        
         return "Success"
 
     except Exception as e:

@@ -63,9 +63,11 @@
 
     function sendInfo() {
       const info = document.getElementById('info-input').value;
+      const robotid = document.getElementById('robotid').value;
+      const data = robotid + ',' + info;
       fetch('/api/getRoboticsInfo', {
         method: 'POST',
-        body: info
+        body: data
       })
       .then(() => {
         // 처리하지 않음

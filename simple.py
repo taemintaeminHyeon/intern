@@ -67,7 +67,7 @@ def getInfo():
     except Exception as e:
         return "An error occurred: {}".format(str(e))
 
-# 콤마 제거 
+    # 콤마 제거 
     #if row:
     #    data = row[0]  # 첫 번째 요소인 data 값을 추출합니다.
     #    return str(data)  # data 값을 반환합니다.
