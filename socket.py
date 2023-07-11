@@ -169,7 +169,8 @@ def makeRoom():
         return "Fail"
 
     
-    
+
+
 
 
 @app.route("/api/sendUserID", methods=['POST'])
@@ -200,16 +201,6 @@ def getID():
     except Exception as e:
         return "An error occurred: {}".format(str(e))
         
-@socketio.on('join_room', namespace='/robotics_info') # 이벤트 join_room 발생시 호출 
-def on_join_room(data):
-    client_sid = request.sid
-    print(f"Client request with SID: {client_sid}")
-    room_name = data['room_name'] #data dic 에서 key 값이 room_name인 value를 가져옴
-    
-    join_room(room_name)  # 클라이언트를 방에 참여시킴
-    print(f"Client joined room: {room_name}")
-    print(f"Client success room with SID: {client_sid}")
-    emit('room_joined', {'room_name': room_name}, namespace='/robotics_info')  # 클라이언트에게 'room_joined' 이벤트 전송
         
     
 @socketio.on('connect', namespace='/robotics_info') # 클라이언트가 소켓 연결 시 호출
@@ -224,7 +215,19 @@ def on_connect():
 
     # 방 이름으로 클라이언트를 참여시킴
    
+    
+   
 
+@socketio.on('join_room', namespace='/robotics_info') # 이벤트 join_room 발생시 호출 
+def on_join_room(data):
+    client_sid = request.sid
+    print(f"Client request with SID: {client_sid}")
+    room_name = data['room_name'] #data dic 에서 key 값이 room_name인 value를 가져옴
+    
+    join_room(room_name)  # 클라이언트를 방에 참여시킴
+    print(f"Client joined room: {room_name}")
+    print(f"Client success room with SID: {client_sid}")
+    emit('room_joined', {'room_name': room_name}, namespace='/robotics_info')  # 클라이언트에게 'room_joined' 이벤트 전송
 
 @socketio.on('disconnect', namespace='/robotics_info') # 클라이언트가 소켓 해제 시 호출
 def on_disconnect():
