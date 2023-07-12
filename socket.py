@@ -225,8 +225,13 @@ def on_join_room(data):
     room_name = data['room_name'] #data dic 에서 key 값이 room_name인 value를 가져옴
     print("rooms =======>", rooms())
     current_room = rooms()
-    if len(current_room) == 2 :
-        leave_room(current_room[1]) # 0은 sid 구분해야함
+    userRoom = -1
+    for i, item in enumerate(current_room): # rooms()의 결과가 순서대로 안나오는 경우가 존재 해서 
+        if 'user' in item:                  # room이름에 user가 포함되면 순서 반환해서 leave
+            userRoom = i
+            
+    if userRoom != -1 :
+        leave_room(current_room[userRoom]) # 0은 sid 구분해야함
     join_room(room_name)  # 클라이언트를 방에 참여시킴
     print(f"Client joined room: {room_name}")
     print(f"Client success room with SID: {client_sid}")
