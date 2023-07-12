@@ -8,7 +8,6 @@ Created on Tue Jul  4 08:57:51 2023
 from flask import Flask, request
 import datetime
 from sqlalchemy import create_engine
-# run server
 from flask_cors import CORS
 
 
@@ -22,7 +21,7 @@ CORS(app, resources={r'*': {'origins': '*'}}) # 모든 곳에서 호출하는 �
 
 
 
-@app.route("/api/setRoboticsInfo", methods=['POST'])
+@app.route("/api/setRoboticsInfo", methods=['POST']) #send
 def setInfo():
     try:
         params = request.get_data() # 전달된 값을 저장
@@ -44,7 +43,7 @@ def setInfo():
 
 
 
-@app.route("/api/getRoboticsInfo", methods=['POST','GET'])
+@app.route("/api/getRoboticsInfo", methods=['POST','GET']) #get
 def getInfo(): 
     try:
         params = request.get_data() # 전달된 값을 저장
@@ -77,7 +76,7 @@ def getInfo():
     
 
 
-@app.route("/api/robotGo", methods=['POST'])
+@app.route("/api/robotGo", methods=['POST']) # To robot
 def sendGoInfo(): 
     params = request.get_data() # 전달된 json값을 저장
     params = str(params, "utf-8")
@@ -86,7 +85,7 @@ def sendGoInfo():
     
 
 
-@app.route("/api/robotStop", methods=['POST'])
+@app.route("/api/robotStop", methods=['POST']) # To robot
 def sendStopInfo(): 
     params = request.get_data() # 전달된 json값을 저장
     params = str(params, "utf-8")
