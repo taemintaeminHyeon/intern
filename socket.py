@@ -5,9 +5,9 @@ Created on Tue Jul  4 08:57:51 2023
 """
 import json
 from flask import Flask, request, render_template
-import datetime
+#import datetime
 from sqlalchemy import create_engine
-from flask_socketio import SocketIO, emit, join_room
+from flask_socketio import SocketIO, emit, join_room, leave_room, rooms
 
 engine = create_engine("mysql+mysqlconnector://root:1234@localhost/testdb")
 app = Flask(__name__)
@@ -23,8 +23,8 @@ socketio = SocketIO(app, manage_session=False)  # SocketIO 초기화
 def index():
     return render_template('test.html')
 
-@app.route("/api/getRoboticsInfo", methods=['POST', 'GET']) # 로봇에게 줄 정보 db에 저장
-def getInfo():
+@app.route("/api/sendUserInfo", methods=['POST', 'GET']) # 로봇에게 줄 정보 db에 저장
+def userInfo():
     try:
         params = request.get_data()  # 전달된 값을 저장
         params = str(params, "utf-8")
@@ -65,7 +65,7 @@ def getInfo():
         return "An error occurred: {}".format(str(e))
 
 @app.route("/api/sendRobotInfo", methods=['POST'])
-def setInfo():
+def sendInfo():
     try:
         params = request.get_data()  # 전달된 값을 저장
         params = str(params, "utf-8")
@@ -223,10 +223,14 @@ def on_join_room(data):
     client_sid = request.sid
     print(f"Client request with SID: {client_sid}")
     room_name = data['room_name'] #data dic 에서 key 값이 room_name인 value를 가져옴
-    
+    print("rooms =======>", rooms())
+    current_room = rooms()
+    if len(current_room) == 2 :
+        leave_room(current_room[1]) # 0은 sid 구분해야함
     join_room(room_name)  # 클라이언트를 방에 참여시킴
     print(f"Client joined room: {room_name}")
     print(f"Client success room with SID: {client_sid}")
+    print("current =====>",rooms())
     emit('room_joined', {'room_name': room_name}, namespace='/robotics_info')  # 클라이언트에게 'room_joined' 이벤트 전송
 
 @socketio.on('disconnect', namespace='/robotics_info') # 클라이언트가 소켓 해제 시 호출
