@@ -3,6 +3,13 @@
 <head>
   <title>Robotics Info</title>
   <style>
+    /* 스크롤바 스타일 설정 */
+  #data-container {
+      max-height: 200px; /* 최대 높이 지정 */
+      overflow: auto; /* 스크롤바 설정 */
+      border: 1px solid #ccc;
+      padding: 10px;
+    }
     body {
       font-family: Arial, sans-serif;
       margin: 0;
@@ -48,8 +55,10 @@
     let roomName = '';
 
     socket.on('robotics_info', (data) => {
-      document.getElementById('data-container').innerHTML = data.data;
-    });
+    const newData = data.data;
+    const dataContainer = document.getElementById('data-container');
+    dataContainer.innerHTML += newData + '<br>';
+});
 
     socket.on('room_created', (data) => {
       const roomName = data.room_name;
@@ -65,7 +74,7 @@
       const info = document.getElementById('info-input').value;
       const robotid = document.getElementById('robotid').value;
       const data = robotid + ',' + info;
-      fetch('/api/getRoboticsInfo', {
+      fetch('/api/sendUserInfo', {
         method: 'POST',
         body: data
       })
@@ -97,6 +106,10 @@
       })
       .catch(error => console.error(error));
     }
+    function clearData() {
+      const dataContainer = document.getElementById('data-container');
+      dataContainer.innerHTML = ''; // data-container의 내용을 지웁니다.
+    }
   </script>
 </head>
 <body>
@@ -110,5 +123,7 @@
   <input type="text" id="info-input" placeholder="Enter info">
   <button onclick="sendInfo()">Send Info</button>
   <div id="data-container"></div>
+  <br>
+  <button onclick="clearData()">Clear Data</button>
 </body>
 </html>
