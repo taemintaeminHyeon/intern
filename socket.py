@@ -8,6 +8,8 @@ from flask import Flask, request, render_template
 #import datetime
 from sqlalchemy import create_engine
 from flask_socketio import SocketIO, emit, join_room, leave_room, rooms
+import paho.mqtt.publish as mqtt_publish
+import paho.mqtt.client as mqtt
 
 engine = create_engine("mysql+mysqlconnector://root:1234@localhost/testdb")
 app = Flask(__name__)
@@ -16,6 +18,32 @@ database = create_engine(app.config['DB_URL'], encoding='utf-8', max_overflow=0)
 app.database = database
 socketio = SocketIO(app, manage_session=False)  # SocketIO 초기화
 
+
+mqtt_broker = "192.168.0.152"
+mqtt_port = 1883
+
+# MQTT 브로커와 연결되었을 때 호출되는 콜백 함수
+def on_connect(client, userdata, flags, rc):
+    if rc == 0:
+        print("Connected to MQTT Broker")
+    else:
+        print("Failed to connect to MQTT Broker with code", rc)
+
+# 메시지 발행 함수
+def publish_message(topic, message):
+    client.publish(topic, payload=message)
+
+# MQTT 클라이언트 생성
+client = mqtt.Client()
+
+# 브로커와 연결할 콜백 함수 등록
+client.on_connect = on_connect
+
+# 브로커에 연결 시도
+client.connect(mqtt_broker, mqtt_port)
+
+# 메시지 루프를 실행하여 브로커와 통신
+client.loop_start()
 
 
 
@@ -39,6 +67,8 @@ def userInfo():
         print("content ------->",list[1])
         
         
+    
+        
 # =============================================================================
 #         now = datetime.datetime.now()
 # 
@@ -56,8 +86,8 @@ def userInfo():
         # 연결된 클라이언트에 데이터 전송 (필요 없음)
         #socketio.emit('robotics_info', {'data': params}, namespace='/robotics_info')
         
-        socketio.emit('client_info', {'data': content}, room=str(robotId), namespace='/robotics_info')
-        
+        #socketio.emit('client_info', {'data': content}, room=str(robotId), namespace='/robotics_info')
+        publish_message(robotId, content)
         
         return "Success"
 
@@ -68,8 +98,9 @@ def userInfo():
 def sendInfo():
     try:
         params = request.get_data()  # 전달된 값을 저장
+        print(params)
         params = str(params, "utf-8")
-        
+        print(params)
         if params == '':
             return "Params is null"
         
@@ -228,10 +259,16 @@ def on_join_room(data):
     userRoom = -1
     for i, item in enumerate(current_room): # rooms()의 결과가 순서대로 안나오는 경우가 존재 해서 
         if 'user' in item:                  # room이름에 user가 포함되면 순서 반환해서 leave
-            userRoom = i
+            userRoom = i                    # room 2개 이상일 경우 문제발생
             
     if userRoom != -1 :
-        leave_room(current_room[userRoom]) # 0은 sid 구분해야함
+        leave_room(current_room[userRoom]) 
+        
+
+    # if len(current_room) == 2 :
+    #     leave_room(current_room[1]) # 0은 sid 구분해야함
+
+
     join_room(room_name)  # 클라이언트를 방에 참여시킴
     print(f"Client joined room: {room_name}")
     print(f"Client success room with SID: {client_sid}")
@@ -244,8 +281,11 @@ def on_disconnect():
     client_sid = request.sid
     
     print(f"Client disconnected with SID: {client_sid}")
+    
+    # for room in socketio.server.manager.rooms(client_sid):
+    #     leave_room(room, sid=client_sid)
 
     
 if __name__ == '__main__':
-    socketio.run(app, host="0.0.0.0", port=2222,allow_unsafe_werkzeug=True)
+    socketio.run(app, host="0.0.0.0", port=2250,allow_unsafe_werkzeug=True)
     
