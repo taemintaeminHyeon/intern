@@ -47,7 +47,7 @@ void httpTaskFunction(void* parameter) {
     // 현재 시간을 가져옵니다.
     unsigned long currentMillis = millis();
 
-    // HTTP POST 요청 보내기 - 3초마다 한 번씩 보냅니다.
+    // HTTP POST 요청 보내기 - 0.2초마다 한 번씩 보냅니다.
     if (currentMillis - previousHTTPMillis >= httpInterval) {
       previousHTTPMillis = currentMillis;
 
